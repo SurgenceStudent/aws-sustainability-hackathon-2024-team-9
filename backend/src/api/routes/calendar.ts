@@ -25,6 +25,7 @@ calRouter.get("/print/:idx", async (req, res) => {
 
 calRouter.post('/analyze', async (req, res) => {
   // analyze a list of days
+  console.log(req);
   const { days } = req.body;
   if (days === undefined) {
     res.status(400).json({ error: "Missing days" });

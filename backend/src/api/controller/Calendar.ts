@@ -13,14 +13,22 @@ export async function analyzeDay(req: Request, res: Response) {
 }
 
 export function printDayView(day: Day) {
-  let dayInfo = `Day: ${day.date.toDateString()}`
+  // Convert `day.date` string to a Date object if necessary
+  const dayDate = new Date(day.date); // Converts the string to a Date object
+
+  let dayInfo = `Day: ${dayDate.toDateString()}`; // Now safe to call toDateString()
+
   day.events.forEach(event => {
+    const startTime = new Date(event.start).toLocaleTimeString(); // Ensure start is a Date object
+    const endTime = new Date(event.end).toLocaleTimeString(); // Ensure end is a Date object
+
     if ("from" in event) {
-      dayInfo = `${dayInfo}\n${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}: ${event.name} at ${event.from}`;
+      dayInfo = `${dayInfo}\n${startTime} - ${endTime}: ${event.name} at ${event.from}`;
     } else {
-      dayInfo = `${dayInfo}\n${event.start.toLocaleTimeString()} - ${event.end.toLocaleTimeString()}: ${event.name} at ${event.address}`;
+      dayInfo = `${dayInfo}\n${startTime} - ${endTime}: ${event.name} at ${event.address}`;
     }
   });
+
   logger.info(dayInfo);
 }
 

@@ -191,14 +191,13 @@ export default function DemoApp() {
     };
 
     try {
-      console.log(payload);
-      // Replace '/api/analyze' with your actual API endpoint
-      const response = await fetch('/api/analyze', {
+      console.log(JSON.stringify(payload));
+      const response = await fetch('http://localhost:5000/api/calendar/analyze', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
