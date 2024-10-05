@@ -1,5 +1,4 @@
 import express from 'express';
-import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
@@ -19,7 +18,7 @@ app.get('/', (req, res) => {
   logger.http('200 GET /');
   res.json({
     message:
-      'Welcome to the Siege of Arcana backend! Use the /api route to access the API.',
+      'Welcome to the TouchGrass backend!',
   });
 });
 
