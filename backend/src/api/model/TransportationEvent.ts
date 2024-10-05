@@ -2,8 +2,8 @@
 
 interface Event {
   name: string,  // event name
-  mode: TransportMode // transport mode
   desc?: string, // description
+  mode: TransportMode,
   start: Date,
   end: Date,
   address: string,
