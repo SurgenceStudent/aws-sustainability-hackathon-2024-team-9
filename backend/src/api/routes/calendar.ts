@@ -22,4 +22,17 @@ calRouter.get("/print/:idx", async (req, res) => {
   res.status(200).json({ message: "printed" });
 });
 
+calRouter.post('/analyze', async (req, res) => {
+  // analyze a list of days
+  const { days } = req.body;
+  if (days === undefined) {
+    res.status(400).json({ error: "Missing days" });
+    return;
+  }
+  for (let i = 0; i < days.length; i++) {
+    printDayView(days[i]);
+  }
+  res.status(200).json({ message: "analyzed" });
+});
+
 export default calRouter;
