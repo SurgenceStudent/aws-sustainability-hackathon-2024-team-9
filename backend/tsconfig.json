@@ -8,7 +8,11 @@
     "forceConsistentCasingInFileNames": true,
     "noImplicitAny": true,
     "strict": true,
+<<<<<<< HEAD
     "skipLibCheck": true,
+=======
+    "skipLibCheck": true
+>>>>>>> 0f31272 (frontend logic)
   },
   "include": [
     "./*.js",

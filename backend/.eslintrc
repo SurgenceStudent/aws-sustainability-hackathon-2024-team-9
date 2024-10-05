@@ -22,8 +22,12 @@
     "camelcase": 0,
     "import/extensions": 0,
     "@typescript-eslint/no-redeclare": 0,
+<<<<<<< HEAD
     "@typescript-eslint/dot-notation": 0,
     "@typescript-eslint/quotes": 0
+=======
+    "@typescript-eslint/dot-notation": 0
+>>>>>>> 0f31272 (frontend logic)
   },
   "settings": {
     "import/parsers": {
