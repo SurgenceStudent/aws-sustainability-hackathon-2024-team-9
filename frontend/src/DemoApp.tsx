@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import FullCalendar, { EventApi } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
@@ -30,6 +30,8 @@ export default function DemoApp() {
   });
   const [analyzeOpen, setAnalyzeOpen] = useState(false); // Dialog for Analyze button
   const [analyzeText, setAnalyzeText] = useState('');
+
+  const calendarRef = useRef<FullCalendar | null>(null); // Create a ref for FullCalendar
 
   function handleWeekendsToggle() {
     setWeekendsVisible(!weekendsVisible);
@@ -179,19 +181,17 @@ export default function DemoApp() {
     return days;
   }
 
-  // Handle the "Go" button action in analyze dialog
   async function handleAnalyze() {
     // Transform current events to Day objects
     const days: Day[] = transformEventsToDays(currentEvents);
-
+  
     // Create the payload with days and prompt
     const payload = {
       days,
       prompt: analyzeText
     };
-
+  
     try {
-      console.log(JSON.stringify(payload));
       const response = await fetch('http://localhost:5000/api/calendar/analyze', {
         method: 'POST',
         headers: {
@@ -199,27 +199,52 @@ export default function DemoApp() {
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (!response.ok) {
         throw new Error(`Server error: ${response.statusText}`);
       }
-
+  
       const result = await response.json();
-      // Handle the response as needed
-      console.log('Analysis result:', result);
+      let days = result.days;
+      console.log(days);
+  
+      let calendarApi = calendarRef.current?.getApi(); // Access FullCalendar API
+  
+      if (calendarApi) {
+        // Clear all existing events before adding new ones
+        calendarApi.removeAllEvents();
+  
+        days.forEach((day: any) => {
+          let events = day.events; // Access the events array from each day
+          events.forEach((event: any) => {
+            calendarApi.addEvent({
+              id: createEventId(), // Use a unique ID generator
+              title: event.name,
+              start: event.start, // Assuming start is in a valid ISO format or Date object
+              end: event.end,     // Same for end
+              extendedProps: {
+                location: event.address
+              },
+              backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
+            });
+          });
+        });
+      }
+      
       alert('Analysis completed successfully!');
     } catch (error) {
       console.error('Error during analysis:', error);
       alert('Failed to perform analysis. Please try again.');
     }
-
+  
     closeAnalyzeDialog();
   }
-
+  
   return (
     <div className='demo-app'>
       <div className='demo-app-main'>
         <FullCalendar
+          ref={calendarRef} // Attach the ref to FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
             left: 'analyzeButton',
