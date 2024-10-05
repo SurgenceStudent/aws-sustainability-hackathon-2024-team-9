@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
-import { formatDate } from '@fullcalendar/core';
-import FullCalendar from '@fullcalendar/react';
+import FullCalendar, { EventApi } from '@fullcalendar/react';
 import dayGridPlugin from '@fullcalendar/daygrid';
 import timeGridPlugin from '@fullcalendar/timegrid';
 import interactionPlugin from '@fullcalendar/interaction';
@@ -14,20 +13,23 @@ import {
   TextField,
   IconButton
 } from '@mui/material';
-import DeleteIcon from '@mui/icons-material/Delete'; // Material UI delete icon
+import DeleteIcon from '@mui/icons-material/Delete';
+import { Day, CalendarEvent } from './interfaces'; // Import your interfaces
 
 export default function DemoApp() {
   const [weekendsVisible, setWeekendsVisible] = useState(true);
-  const [currentEvents, setCurrentEvents] = useState([]);
+  const [currentEvents, setCurrentEvents] = useState<EventApi[]>([]);
   const [openDialog, setOpenDialog] = useState(false);
   const [newEventInfo, setNewEventInfo] = useState<any>(null);
-  const [selectedEvent, setSelectedEvent] = useState<any>(null); // Store the event being edited
+  const [selectedEvent, setSelectedEvent] = useState<EventApi | null>(null);
   const [eventData, setEventData] = useState({
     title: '',
     startTime: '',
     endTime: '',
     location: ''
   });
+  const [analyzeOpen, setAnalyzeOpen] = useState(false); // Dialog for Analyze button
+  const [analyzeText, setAnalyzeText] = useState('');
 
   function handleWeekendsToggle() {
     setWeekendsVisible(!weekendsVisible);
@@ -65,7 +67,7 @@ export default function DemoApp() {
     return `${hours}:${minutes}`;
   }
 
-  function handleEvents(events: any) {
+  function handleEvents(events: EventApi[]) {
     setCurrentEvents(events);
   }
 
@@ -77,48 +79,58 @@ export default function DemoApp() {
   }
 
   function handleSave() {
-    let calendarApi = newEventInfo ? newEventInfo.view.calendar : selectedEvent._calendar;
-
-    if (eventData.title && eventData.startTime && eventData.endTime) {
-      let startDate, endDate;
-
-      if (newEventInfo) {
-        startDate = new Date(newEventInfo.startStr);
-        endDate = new Date(newEventInfo.endStr);
-      } else if (selectedEvent) {
-        startDate = selectedEvent.start;
-        endDate = selectedEvent.end;
-      }
-
+    if (!eventData.title || !eventData.startTime || !eventData.endTime) {
+      alert('Please fill in all required fields (Title, Start Time, and End Time).');
+      return;
+    }
+  
+    let calendarApi = newEventInfo ? newEventInfo.view.calendar : selectedEvent?._calendar;
+    
+    let startDate, endDate;
+    if (newEventInfo) {
+      // Creating a new event
+      startDate = new Date(newEventInfo.startStr);
+      endDate = new Date(newEventInfo.endStr);
+  
+      // Apply the user-selected time to start and end dates
       const [startHour, startMinute] = eventData.startTime.split(':').map(Number);
       const [endHour, endMinute] = eventData.endTime.split(':').map(Number);
       startDate.setHours(startHour, startMinute);
       endDate.setHours(endHour, endMinute);
-
-      if (selectedEvent) {
-        selectedEvent.setProp('title', eventData.title);
-        selectedEvent.setStart(startDate);
-        selectedEvent.setEnd(endDate);
-        selectedEvent.setExtendedProp('location', eventData.location);
-      } else {
-        calendarApi.addEvent({
-          id: createEventId(),
-          title: eventData.title,
-          start: startDate.toISOString(),
-          end: endDate.toISOString(),
-          allDay: newEventInfo.allDay,
-          extendedProps: {
-            location: eventData.location
-          }
-        });
-      }
-
-      handleClose();
-    } else {
-      alert('Please fill in all required fields (Title, Start Time, and End Time).');
+  
+      // Add the new event to the calendar
+      calendarApi.addEvent({
+        id: createEventId(),
+        title: eventData.title,
+        start: startDate.toISOString(),
+        end: endDate.toISOString(),
+        allDay: newEventInfo.allDay,
+        extendedProps: {
+          location: eventData.location
+        }
+      });
+    } else if (selectedEvent) {
+      // Editing an existing event
+      startDate = new Date(selectedEvent.start);
+      endDate = new Date(selectedEvent.end);
+  
+      // Apply the user-selected time to start and end dates
+      const [startHour, startMinute] = eventData.startTime.split(':').map(Number);
+      const [endHour, endMinute] = eventData.endTime.split(':').map(Number);
+      startDate.setHours(startHour, startMinute);
+      endDate.setHours(endHour, endMinute);
+  
+      // Update the existing event with new data
+      selectedEvent.setProp('title', eventData.title);
+      selectedEvent.setStart(startDate);
+      selectedEvent.setEnd(endDate);
+      selectedEvent.setExtendedProp('location', eventData.location);
     }
+  
+    // Close the dialog and reset the form
+    handleClose();
   }
-
+    
   function handleDelete() {
     if (selectedEvent) {
       selectedEvent.remove();
@@ -126,20 +138,100 @@ export default function DemoApp() {
     }
   }
 
+  // Open analyze dialog
+  function openAnalyzeDialog() {
+    setAnalyzeOpen(true);
+  }
+
+  // Close analyze dialog
+  function closeAnalyzeDialog() {
+    setAnalyzeOpen(false);
+    setAnalyzeText('');
+  }
+
+  // Function to transform FullCalendar events to Day objects
+  function transformEventsToDays(events: EventApi[]): Day[] {
+    const dayMap: { [date: string]: CalendarEvent[] } = {};
+
+    events.forEach(event => {
+      const dateStr = event.start!.toISOString().split('T')[0]; // YYYY-MM-DD
+      if (!dayMap[dateStr]) {
+        dayMap[dateStr] = [];
+      }
+
+      const calendarEvent: CalendarEvent = {
+        name: event.title,
+        start: event.start!,
+        end: event.end!,
+        address: event.extendedProps.location || '',
+        timeSensitive: true, // Set based on your logic
+        daySensitive: false // Set based on your logic
+      };
+
+      dayMap[dateStr].push(calendarEvent);
+    });
+
+    const days: Day[] = Object.keys(dayMap).map(dateStr => ({
+      date: new Date(dateStr),
+      events: dayMap[dateStr]
+    }));
+
+    return days;
+  }
+
+  // Handle the "Go" button action in analyze dialog
+  async function handleAnalyze() {
+    // Transform current events to Day objects
+    const days: Day[] = transformEventsToDays(currentEvents);
+
+    // Create the payload with days and prompt
+    const payload = {
+      days,
+      prompt: analyzeText
+    };
+
+    try {
+      console.log(payload);
+      // Replace '/api/analyze' with your actual API endpoint
+      const response = await fetch('/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.statusText}`);
+      }
+
+      const result = await response.json();
+      // Handle the response as needed
+      console.log('Analysis result:', result);
+      alert('Analysis completed successfully!');
+    } catch (error) {
+      console.error('Error during analysis:', error);
+      alert('Failed to perform analysis. Please try again.');
+    }
+
+    closeAnalyzeDialog();
+  }
+
   return (
     <div className='demo-app'>
-      <Sidebar
-        weekendsVisible={weekendsVisible}
-        handleWeekendsToggle={handleWeekendsToggle}
-        currentEvents={currentEvents}
-      />
       <div className='demo-app-main'>
         <FullCalendar
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
           headerToolbar={{
-            left: '',
+            left: 'analyzeButton',
             center: 'title',
             right: 'prev,next today'
+          }}
+          customButtons={{
+            analyzeButton: {
+              text: 'Analyze',
+              click: openAnalyzeDialog
+            }
           }}
           initialView='timeGridWeek'
           editable={true}
@@ -156,6 +248,7 @@ export default function DemoApp() {
         />
       </div>
 
+      {/* Event Creation/Edit Dialog */}
       <Dialog open={openDialog} onClose={handleClose}>
         <DialogTitle>
           {selectedEvent ? 'Edit Event' : 'Create New Event'}
@@ -216,6 +309,30 @@ export default function DemoApp() {
           <Button onClick={handleSave}>{selectedEvent ? 'Save Changes' : 'Create Event'}</Button>
         </DialogActions>
       </Dialog>
+
+      {/* Analyze Dialog */}
+      <Dialog open={analyzeOpen} onClose={closeAnalyzeDialog}>
+        <DialogTitle>Analyze Calendar</DialogTitle>
+        <DialogContent>
+          <TextField
+            margin='dense'
+            label='Enter details for analysis'
+            type='text'
+            fullWidth
+            multiline
+            rows={4}
+            variant='outlined'
+            value={analyzeText}
+            onChange={(e) => setAnalyzeText(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={closeAnalyzeDialog}>Cancel</Button>
+          <Button onClick={handleAnalyze} disabled={!analyzeText.trim()}>
+            Go
+          </Button>
+        </DialogActions>
+      </Dialog>
     </div>
   );
 }
@@ -226,37 +343,5 @@ function renderEventContent(eventInfo: any) {
       <b>{eventInfo.timeText}</b>
       <i>{eventInfo.event.title}</i>
     </>
-  );
-}
-
-function Sidebar({ weekendsVisible, handleWeekendsToggle, currentEvents }) {
-  return (
-    <div className='demo-app-sidebar'>
-      <div className='demo-app-sidebar-section'>
-        <h2>Instructions</h2>
-        <ul>
-          <li>Select dates and you will be prompted to create a new event</li>
-          <li>Drag, drop, and resize events</li>
-          <li>Click an event to edit it</li>
-        </ul>
-      </div>
-      <div className='demo-app-sidebar-section'>
-        <h2>All Events ({currentEvents.length})</h2>
-        <ul>
-          {currentEvents.map((event: any) => (
-            <SidebarEvent key={event.id} event={event} />
-          ))}
-        </ul>
-      </div>
-    </div>
-  );
-}
-
-function SidebarEvent({ event }) {
-  return (
-    <li key={event.id}>
-      <b>{formatDate(event.start, { year: 'numeric', month: 'short', day: 'numeric' })}</b>
-      <i>{event.title}</i>
-    </li>
   );
 }
