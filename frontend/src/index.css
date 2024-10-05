@@ -1,0 +1,55 @@
+html,
+body,
+body > div { /* the react root */
+  margin: 0;
+  padding: 0;
+  min-height: 100%; /* Use min-height instead of height */
+  box-sizing: border-box;
+}
+
+.demo-app {
+  display: flex;
+  min-height: 100vh; /* Ensure it takes up full viewport height */
+  max-height: 100vh;
+  font-family: Arial, Helvetica Neue, Helvetica, sans-serif;
+  font-size: 14px;
+}
+
+.demo-app-sidebar {
+  width: 250px; /* Set a reasonable width */
+  background: #eaf9ff;
+  border-right: 1px solid #d3e2e8;
+}
+
+.demo-app-main {
+  flex-grow: 1;
+  padding: 3em;
+  overflow: auto; /* Allow scrolling if content overflows */
+}
+
+.fc { /* the calendar root */
+  width: 100%; /* Ensure it takes full width */
+  max-width: 100%; /* Remove unnecessary max-width constraints */
+  height: 90vh;
+  margin: 0 auto;
+  box-sizing: border-box; /* Include padding and borders in width calculations */
+}
+
+h2 {
+  margin: 0;
+  font-size: 16px;
+}
+
+ul {
+  margin: 0;
+  padding: 0 0 0 1.5em;
+}
+
+li {
+  margin: 1.5em 0;
+  padding: 0;
+}
+
+b { /* used for event dates/times */
+  margin-right: 3px;
+}
