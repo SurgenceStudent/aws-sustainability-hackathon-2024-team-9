@@ -1,5 +1,6 @@
 import express from "express";
 import { analyzeDay, printDayView } from "../controller/calendar";
+
 import { sampleDays } from "../../utils/sampleData";
 
 const calRouter = express.Router();

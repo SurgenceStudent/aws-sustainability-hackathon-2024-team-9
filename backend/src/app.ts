@@ -2,9 +2,10 @@ import express from 'express';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import * as middlewares from './middlewares';
+// import * as middlewares from './middlewares';
 import api from './api';
 import logger from './utils/logger';
+import httpLog from "./utils/http-log";
 
 import './utils/loadEnv';
 
@@ -24,7 +25,8 @@ app.get('/', (req, res) => {
 
 app.use('/api', api);
 
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+// app.use(middlewares.notFound);
+// app.use(middlewares.errorHandler);
+app.use(httpLog);
 
 export default app;
