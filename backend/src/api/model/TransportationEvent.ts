@@ -1,12 +1,12 @@
 // Description: Models a calendar event in a given day
 
-interface Event {
+import { TransportMode } from "./TransportMode";
+
+export interface TransportationEvent {
   name: string,  // event name
-  desc?: string, // description
   mode: TransportMode,
   start: Date,
   end: Date,
-  address: string,
-  timeSensitive: boolean,
-  daySensitive: boolean
+  from: string, // starting location
+  to: string, // ending location
 }

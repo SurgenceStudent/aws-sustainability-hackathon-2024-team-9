@@ -1,11 +1,11 @@
 import express from 'express';
-import morgan from 'morgan';
 import helmet from 'helmet';
 import cors from 'cors';
 
-import * as middlewares from './middlewares';
+// import * as middlewares from './middlewares';
 import api from './api';
 import logger from './utils/logger';
+import httpLog from "./utils/http-log";
 
 import './utils/loadEnv';
 
@@ -19,13 +19,14 @@ app.get('/', (req, res) => {
   logger.http('200 GET /');
   res.json({
     message:
-      'Welcome to the Siege of Arcana backend! Use the /api route to access the API.',
+      'Welcome to the TouchGrass backend!',
   });
 });
 
 app.use('/api', api);
 
-app.use(middlewares.notFound);
-app.use(middlewares.errorHandler);
+// app.use(middlewares.notFound);
+// app.use(middlewares.errorHandler);
+app.use(httpLog);
 
 export default app;
