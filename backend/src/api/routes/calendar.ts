@@ -2,8 +2,9 @@ import express from "express";
 import {analyzeDay, printDayView} from "../controller/calendar";
 
 import {sampleDays} from "../../utils/sampleData";
-import {createTransportRoutes} from "../controller/Navigation";
+import {createTransportRoutes, optimizeTransportRoutes} from "../controller/Navigation";
 import {CalendarEvent} from "../model/CalendarEvent";
+import logger from "../../utils/logger";
 
 const calRouter = express.Router();
 
@@ -50,9 +51,12 @@ calRouter.post('/analyze', async (req, res) => {
       }
       day_options.push(await createTransportRoutes(from, to))
     }
-    new_events.push(day_options)
+    new_events.push(await optimizeTransportRoutes(days[i].events, day_options))
   }
-  res.status(200).json({days: new_events, message: "analyzed"});
+  // atp: new_events is [[day1_options], [day2_options], ...]
+  // -> TEvents
+
+  res.status(200).json({payload: new_events, message: "analyzed"});
 });
 
 export default calRouter;
