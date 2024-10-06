@@ -1,13 +1,13 @@
 export enum TransportMode {
-  Walk,
-  Car,
-  Bike,
-  Bus,
+  Walk="WALKING",
+  Bike="BICYCLING",
+  Transit="TRANSIT",
+  Car="DRIVING",
 }
 
-export const TM_TO_VERB = {
+export const TM_TO_GUI = {
   [TransportMode.Walk]: "walk",
   [TransportMode.Car]: "drive",
-  [TransportMode.Bike]: "bike ride",
-  [TransportMode.Bus]: "bus",
+  [TransportMode.Bike]: "bike",
+  [TransportMode.Transit]: "transit",
 };
