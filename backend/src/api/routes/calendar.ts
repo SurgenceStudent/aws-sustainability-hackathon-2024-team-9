@@ -38,6 +38,10 @@ calRouter.post('/analyze', async (req, res) => {
   for (let i = 0; i < days.length; i++) {
     // get two events at a time and build all possible transportation events
     const day_options = []
+    if (days[i].events.length < 2) {
+      new_events.push(days[i].events)
+      continue
+    }
     for (let j = 0; j < days[i].events.length - 1; j++) {
       if (days[i].events.length < 2) {
         new_events.push(days[i].events)
@@ -51,8 +55,8 @@ calRouter.post('/analyze', async (req, res) => {
       }
       const to: CalendarEvent = {
         ...days[i].events[j + 1],
-        start: new Date(days[i].events[j].start),
-        end: new Date(days[i].events[j].end),
+        start: new Date(days[i].events[j + 1].start),
+        end: new Date(days[i].events[j + 1].end),
       }
       day_options.push(await createTransportRoutes(from, to))
     }
