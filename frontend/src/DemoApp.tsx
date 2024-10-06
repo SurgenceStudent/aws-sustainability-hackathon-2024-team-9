@@ -14,7 +14,8 @@ import {
   IconButton
 } from '@mui/material';
 import DeleteIcon from '@mui/icons-material/Delete';
-import { Day, CalendarEvent } from './interfaces'; // Import your interfaces
+import { Day } from './Day.ts'; // Import your interfaces
+import { CalendarEvent } from './CalendarEvent.ts';
 
 export default function DemoApp() {
   const [weekendsVisible, setWeekendsVisible] = useState(true);
@@ -190,6 +191,8 @@ export default function DemoApp() {
       days,
       prompt: analyzeText
     };
+
+    console.log(payload);
   
     try {
       const response = await fetch('http://localhost:5000/api/calendar/analyze', {
@@ -216,18 +219,20 @@ export default function DemoApp() {
   
         days.forEach((day: any) => {
           let events = day.events; // Access the events array from each day
-          events.forEach((event: any) => {
-            calendarApi.addEvent({
-              id: createEventId(), // Use a unique ID generator
-              title: event.name,
-              start: event.start, // Assuming start is in a valid ISO format or Date object
-              end: event.end,     // Same for end
-              extendedProps: {
-                location: event.address
-              },
-              backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
-            });
-          });
+          if (events) {
+            events.forEach((event: any) => {
+              calendarApi.addEvent({
+                id: createEventId(), // Use a unique ID generator
+                title: event.name,
+                start: event.start, // Assuming start is in a valid ISO format or Date object
+                end: event.end,     // Same for end
+                extendedProps: {
+                  location: event.address
+                },
+                backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
+              });
+            });  
+          }
         });
       }
       
