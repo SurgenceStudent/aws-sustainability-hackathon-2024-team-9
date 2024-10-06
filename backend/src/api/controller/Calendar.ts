@@ -1,7 +1,7 @@
 import { Request, Response } from "express";
 import { Day } from "../model/Day";
 import { CalendarEvent } from "../model/CalendarEvent";
-import { TM_TO_VERB, TransportMode } from "../model/TransportMode";
+import { TM_TO_GUI, TransportMode } from "../model/TransportMode";
 import { TransportationEvent } from "../model/TransportationEvent";
 import logger from "../../utils/logger";
 
@@ -35,7 +35,7 @@ export function printDayView(day: Day) {
 // transforms a day by including a transportation event from 'from' to 'to'
 export async function addTransportationEvent(day: Day, from: CalendarEvent, to: CalendarEvent, mode: TransportMode): Promise<Day> {
   const transportationEvent: TransportationEvent = {
-    name: `Taking a ${TM_TO_VERB[mode]} ${from.name} to ${to.name}`,
+    name: `Taking a ${TM_TO_GUI[mode]} ${from.name} to ${to.name}`,
     mode: mode,
     start: from.end,
     end: to.start,
