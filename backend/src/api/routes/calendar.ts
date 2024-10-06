@@ -39,6 +39,11 @@ calRouter.post('/analyze', async (req, res) => {
     // get two events at a time and build all possible transportation events
     const day_options = []
     for (let j = 0; j < days[i].events.length - 1; j++) {
+      if (days[i].events.length < 2) {
+        new_events.push(days[i].events)
+        continue
+      }
+  
       const from: CalendarEvent = {
         ...days[i].events[j],
         start: new Date(days[i].events[j].start),
