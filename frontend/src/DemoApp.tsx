@@ -208,7 +208,8 @@ export default function DemoApp() {
       }
   
       const result = await response.json();
-      let days = result.days;
+      console.log(result);
+      let days = result.payload;
       console.log(days);
   
       let calendarApi = calendarRef.current?.getApi(); // Access FullCalendar API
@@ -217,20 +218,30 @@ export default function DemoApp() {
         // Clear all existing events before adding new ones
         calendarApi.removeAllEvents();
   
-        days.forEach((day: any) => {
-          let events = day.events; // Access the events array from each day
+        days.forEach((events: any) => {
           if (events) {
             events.forEach((event: any) => {
-              calendarApi.addEvent({
-                id: createEventId(), // Use a unique ID generator
-                title: event.name,
-                start: event.start, // Assuming start is in a valid ISO format or Date object
-                end: event.end,     // Same for end
-                extendedProps: {
-                  location: event.address
-                },
-                backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
-              });
+              if (!event.address) {
+                calendarApi.addEvent({
+                  id: createEventId(), // Use a unique ID generator
+                  title: event.name,
+                  start: event.start, // Assuming start is in a valid ISO format or Date object
+                  end: event.end,     // Same for end
+                  backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
+                });  
+              }
+              else {
+                calendarApi.addEvent({
+                  id: createEventId(), // Use a unique ID generator
+                  title: event.name,
+                  start: event.start, // Assuming start is in a valid ISO format or Date object
+                  end: event.end,     // Same for end
+                  extendedProps: {
+                    location: event.address
+                  },
+                  backgroundColor: event.name.startsWith('Traveling') ? '#FFB6C1' : '', // Set color for travel events
+                });  
+              }
             });  
           }
         });
